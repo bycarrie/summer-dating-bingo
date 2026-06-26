@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>2026 Summer Dating Bingo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;padding:2rem 1rem;position:relative;overflow-x:hidden;}
+#bgSvg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.page{max-width:640px;margin:0 auto;position:relative;z-index:1;}
+
+/* hero */
+.hero{text-align:center;margin-bottom:1.5rem;}
+.hero h1{font-family:'Playfair Display',serif;font-style:italic;font-size:28px;font-weight:400;color:#c97fa0;line-height:1.2;}
+.hero p{font-size:11px;letter-spacing:0.06em;color:#c0a0b4;margin-top:6px;font-style:italic;}
+
+/* join screen */
+#joinScreen{background:rgba(253,242,248,0.92);border-radius:18px;padding:2rem;border:1px solid #f0d0e4;text-align:center;margin-bottom:1.5rem;}
+#joinScreen h2{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#c97fa0;margin-bottom:1rem;}
+.join-row{display:flex;gap:8px;max-width:320px;margin:0 auto;}
+.join-row input{flex:1;border:1px solid rgba(210,175,200,0.5);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,0.9);color:#8a6070;outline:none;}
+.join-row input:focus{border-color:#d4a0c0;}
+.join-row input::placeholder{color:#c8a8b8;}
+.join-row button{background:rgba(240,184,216,0.8);border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-family:'DM Sans',sans-serif;color:#7a3060;cursor:pointer;font-weight:500;}
+.join-row button:hover{opacity:0.85;}
+#joinError{font-size:11px;color:#c97fa0;margin-top:8px;}
+
+/* board */
+#boardSection{display:none;}
+.board{background:rgba(253,242,248,0.92);border-radius:18px;padding:1rem;border:1px solid #f0d0e4;}
+.cols{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:5px;}
+.col-h{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;text-align:center;color:#c97fa0;}
+.col-h.green{color:#7ab89a;}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+.cell{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:5px;text-align:center;font-size:8px;color:#a07888;background:rgba(255,255,255,0.78);border:1px solid rgba(210,175,200,0.3);cursor:pointer;line-height:1.3;transition:transform 0.12s;}
+.cell:hover{border-color:rgba(210,175,200,0.65);transform:scale(1.03);}
+.cell.marked{background:rgba(232,212,248,0.7);border:1.5px solid #c890b8;color:#8050a0;}
+.cell.green-flag{background:rgba(234,248,240,0.82);border:1px solid rgba(160,210,185,0.45);color:#5a9878;}
+.cell.green-flag.marked{background:rgba(180,235,210,0.7);border:1.5px solid #80c8a8;color:#3a7858;}
+
+/* score bar */
+.score-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;padding:6px 10px;background:rgba(255,255,255,0.6);border-radius:10px;border:1px solid rgba(210,175,200,0.2);}
+.score-item{text-align:center;}
+.score-val{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#c97fa0;}
+.score-label{font-size:9px;color:#c0a0b4;letter-spacing:0.06em;text-transform:uppercase;}
+.divider{width:1px;height:28px;background:rgba(210,175,200,0.3);}
+
+/* leaderboard */
+.lb-section{margin-top:1rem;background:rgba(255,255,255,0.7);border-radius:14px;border:1px solid rgba(210,175,200,0.25);padding:1rem;}
+.lb-title{font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:#c97fa0;margin-bottom:10px;}
+.lb-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(210,175,200,0.18);font-size:12px;color:#8a6878;}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Playfair Display',serif;font-style:italic;color:#c97fa0;font-size:13px;width:20px;}
+.lb-name{flex:1;padding:0 8px;}
+.lb-name.you{font-weight:500;color:#c97fa0;}
+.lb-score{font-weight:500;color:#a060a0;font-size:11px;}
+.lb-score.positive{color:#7ab89a;}
+.lb-score.negative{color:#c97fa0;}
+
+.player-tag{text-align:center;font-size:10px;color:#c0a0b4;margin-top:6px;letter-spacing:0.05em;}
+.player-tag span{color:#c97fa0;font-weight:500;}
+</style>
+</head>
+<body>
+
+<svg id="bgSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<div class="page">
+  <div class="hero">
+    <h1>2026 Summer Dating Bingo</h1>
+    <p>Score -1 for every ick. Score +4 for every green flag. Breakeven and you survived.</p>
+  </div>
+
+  <div id="joinScreen">
+    <h2>enter your name to play</h2>
+    <div class="join-row">
+      <input id="nameInput" placeholder="your name..." maxlength="20"/>
+      <button onclick="joinBoard()">join</button>
+    </div>
+    <div id="joinError"></div>
+  </div>
+
+  <div id="boardSection">
+    <div class="board">
+      <div class="cols">
+        <div class="col-h">B</div>
+        <div class="col-h">I</div>
+        <div class="col-h">N</div>
+        <div class="col-h">G</div>
+        <div class="col-h green">O</div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="score-bar">
+        <div class="score-item">
+          <div class="score-val" id="ickCount">0</div>
+          <div class="score-label">icks</div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-item">
+          <div class="score-val" id="greenCount">0</div>
+          <div class="score-label">green flags</div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-item">
+          <div class="score-val" id="totalScore">0</div>
+          <div class="score-label">score</div>
+        </div>
+      </div>
+    </div>
+    <div class="player-tag">playing as <span id="playerTag"></span></div>
+    <div class="lb-section">
+      <div class="lb-title">leaderboard</div>
+      <div id="leaderboard"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://uihlbehkipzlpsaqkofv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpaGxiZWhraXB6bHBzYXFrb2Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MzI4NTUsImV4cCI6MjA5ODAwODg1NX0.fbo1hMKARJhgKEdpPwKwmtiMBnCf7pZQcF2ivH7JgVE';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const icks = [
+  "Asked to split the bill",
+  "Wanna come over instead?",
+  "Brings up his ex",
+  "Love bombs you",
+  "Finance/crypto bro",
+  "Wore sweatpants",
+  "Marathon runner",
+  "Pickleball is his personality",
+  "Mirror gym selfie",
+  "Rock climbing photo",
+  "Let's keep things casual",
+  "Catfish",
+  "Shorter than expected",
+  "15+ minutes late",
+  "Asks your body count",
+  "International student",
+  "Date feels like a job interview",
+  "Tries to feed you",
+  "Ghosts after first date",
+  "Complains about his job"
+];
+
+const greenFlags = [
+  "Makes a reservation",
+  "Brings you flowers",
+  "Lets you have the booth",
+  "Plans Date #2 before leaving",
+  "Texts \"Made it home?\""
+];
+
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const SEED = 20260601;
+const shuffledIcks = seededShuffle(icks, SEED);
+
+let playerName = null;
+let playerId = null;
+let checked = new Set();
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 5; col++) {
+      const cell = document.createElement('div');
+      if (col === 4) {
+        cell.className = 'cell green-flag' + (checked.has(`g${row}`) ? ' marked' : '');
+        cell.textContent = greenFlags[row];
+        cell.dataset.key = `g${row}`;
+        cell.dataset.type = 'green';
+      } else {
+        const idx = row * 4 + col;
+        cell.className = 'cell' + (checked.has(`i${idx}`) ? ' marked' : '');
+        cell.textContent = shuffledIcks[idx];
+        cell.dataset.key = `i${idx}`;
+        cell.dataset.type = 'ick';
+      }
+      cell.addEventListener('click', () => toggleCell(cell));
+      grid.appendChild(cell);
+    }
+  }
+  updateScoreBar();
+}
+
+function updateScoreBar() {
+  let ickBoxes = 0, greenBoxes = 0;
+  checked.forEach(k => { if (k.startsWith('g')) greenBoxes++; else ickBoxes++; });
+  const total = (greenBoxes * 4) - ickBoxes;
+  document.getElementById('ickCount').textContent = ickBoxes;
+  document.getElementById('greenCount').textContent = greenBoxes;
+  const el = document.getElementById('totalScore');
+  el.textContent = (total > 0 ? '+' : '') + total;
+  el.style.color = total >= 0 ? '#7ab89a' : '#c97fa0';
+}
+
+async function toggleCell(cell) {
+  if (!playerId) return;
+  const key = cell.dataset.key;
+  if (checked.has(key)) checked.delete(key); else checked.add(key);
+  cell.classList.toggle('marked');
+  updateScoreBar();
+  await saveState();
+}
+
+async function saveState() {
+  let ickBoxes = 0, greenBoxes = 0;
+  checked.forEach(k => { if (k.startsWith('g')) greenBoxes++; else ickBoxes++; });
+  const score = (greenBoxes * 4) - ickBoxes;
+  await sb.from('bingo_state').upsert({
+    id: playerId,
+    player_name: playerName,
+    checked_squares: JSON.stringify([...checked]),
+    score
+  });
+}
+
+async function joinBoard() {
+  const input = document.getElementById('nameInput');
+  const name = input.value.trim();
+  if (!name) { document.getElementById('joinError').textContent = 'enter a name to continue'; return; }
+
+  const { data: existing } = await sb.from('bingo_state').select('id,player_name,checked_squares,score').ilike('player_name', name).maybeSingle();
+  if (existing) {
+    playerId = existing.id;
+    playerName = existing.player_name;
+    checked = new Set(JSON.parse(existing.checked_squares || '[]'));
+  } else {
+    const { data: newRow, error } = await sb.from('bingo_state').insert({ player_name: name, checked_squares: '[]', score: 0 }).select('id,player_name').single();
+    if (error || !newRow) { document.getElementById('joinError').textContent = 'something went wrong, try again'; console.error(error); return; }
+    playerId = newRow.id;
+    playerName = name;
+    checked = new Set();
+  }
+
+  document.getElementById('joinScreen').style.display = 'none';
+  document.getElementById('boardSection').style.display = 'block';
+  document.getElementById('playerTag').textContent = playerName;
+  buildGrid();
+  loadLeaderboard();
+  subscribeRealtime();
+}
+
+async function loadLeaderboard() {
+  const { data } = await sb.from('bingo_state').select('player_name,score').order('score', { ascending: false });
+  const lb = document.getElementById('leaderboard');
+  if (!data || data.length === 0) { lb.innerHTML = '<div class="lb-row">no players yet</div>'; return; }
+  lb.innerHTML = data.slice(0, 5).map((p, i) => {
+    const isYou = p.player_name.toLowerCase() === playerName.toLowerCase();
+    const scoreClass = p.score > 0 ? 'positive' : p.score < 0 ? 'negative' : '';
+    return `<div class="lb-row">
+      <span class="lb-rank">${i + 1}.</span>
+      <span class="lb-name${isYou ? ' you' : ''}">${p.player_name}${isYou ? ' (you)' : ''}</span>
+      <span class="lb-score ${scoreClass}">${p.score > 0 ? '+' : ''}${p.score} pts</span>
+    </div>`;
+  }).join('');
+}
+
+function subscribeRealtime() {
+  sb.channel('bingo_state').on('postgres_changes', { event: '*', schema: 'public', table: 'bingo_state' }, () => {
+    loadLeaderboard();
+  }).subscribe();
+}
+
+// petal background
+const svg = document.getElementById('bgSvg');
+const W = window.innerWidth, H = Math.max(window.innerHeight, 900);
+svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+const pc = ['#f7d4e6','#edd4f4','#fce8f0','#d4eaf7','#f4d4ec','#e8d4f4','#fad8e8','#dde0f8','#f0e8fa'];
+function rand(i){return((Math.sin(i*127.1+311.7)*43758.5453)%1+1)%1;}
+for(let i=0;i<60;i++){
+  const x=rand(i)*W,y=rand(i+60)*H,r=4+rand(i+120)*10;
+  const color=pc[Math.floor(rand(i+180)*pc.length)];
+  const rot=rand(i+240)*45,op=0.2+rand(i+300)*0.25;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform',`translate(${x},${y}) rotate(${rot})`);
+  g.setAttribute('opacity',op.toFixed(2));
+  [0,90,180,270].forEach(a=>{
+    const e=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    e.setAttribute('cx',0);e.setAttribute('cy',-(r*0.55));
+    e.setAttribute('rx',r*0.36);e.setAttribute('ry',r*0.6);
+    e.setAttribute('fill',color);e.setAttribute('transform',`rotate(${a})`);
+    g.appendChild(e);
+  });
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx',0);dot.setAttribute('cy',0);dot.setAttribute('r',r*0.2);
+  dot.setAttribute('fill','#f4b8d0');g.appendChild(dot);svg.appendChild(g);
+}
+for(let i=0;i<90;i++){
+  const x=rand(i+500)*W,y=rand(i+590)*H;
+  const color=pc[Math.floor(rand(i+680)*pc.length)];
+  const e=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+  e.setAttribute('cx',x);e.setAttribute('cy',y);
+  e.setAttribute('rx',2+rand(i+770)*4);e.setAttribute('ry',5+rand(i+860)*7);
+  e.setAttribute('fill',color);
+  e.setAttribute('transform',`rotate(${rand(i+950)*360},${x},${y})`);
+  e.setAttribute('opacity',(0.1+rand(i+1040)*0.15).toFixed(2));
+  svg.appendChild(e);
+}
+</script>
+</body>
+</html>
