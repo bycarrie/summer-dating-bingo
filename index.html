@@ -248,7 +248,7 @@ async function loadLeaderboard(){
   const jail=document.getElementById('boyJail');
   jail.innerHTML=jailed.length===0
     ?'<div class="empty-state">no inmates yet</div>'
-    :jailed.map(p=>`<div class="jail-name">${p.player_name}</div>`).join('');
+    :jailed.map(p=>`<div class="jail-name">${p.player_name} <span style="color:#b0a0a8;font-size:10px;">(${p.score>0?'+':''}${p.score} pts)</span></div>`).join('');
 }
 
 function subscribeRealtime(){
