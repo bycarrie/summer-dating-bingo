@@ -69,6 +69,25 @@ body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;paddin
 .jail-name:last-child{border-bottom:none;}
 .jail-name::before{content:'🔒';font-size:10px;}
 .saved-note{font-size:10px;color:#c0a8b8;font-style:italic;margin-top:10px;text-align:center;line-height:1.4;}
+@media(max-width:520px){
+  body{padding:1rem 0.4rem;}
+  .hero h1{font-size:22px;}
+  .hero p{font-size:9.5px;}
+  .page{max-width:100%;}
+  .board{padding:0.6rem;}
+  .col-h{font-size:15px;}
+  .cols{gap:3px;margin-bottom:3px;}
+  .grid{gap:3px;}
+  .cell{font-size:6.5px;padding:3px;border-radius:7px;}
+  .score-bar{gap:8px;padding:5px 6px;}
+  .score-val{font-size:17px;}
+  .score-label{font-size:8px;}
+  .divider{height:22px;}
+  .bottom-panels{grid-template-columns:1fr 1fr;gap:8px;margin-top:0.75rem;}
+  .panel{padding:0.7rem;}
+  .join-row input,.join-row button{font-size:12px;}
+  #joinScreen{padding:1.25rem;}
+}
 .disclaimer{text-align:center;font-size:10px;color:#c0a0b4;font-style:italic;margin-top:1rem;line-height:1.5;}
 .footer{text-align:center;font-size:10px;color:#d4b8c8;font-style:italic;letter-spacing:0.06em;margin-top:1.5rem;padding-bottom:1rem;}
 .empty-state{font-size:11px;color:#c0a8b8;font-style:italic;}
