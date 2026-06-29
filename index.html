@@ -68,7 +68,8 @@ body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;paddin
 .jail-name{padding:5px 0;border-bottom:1px solid rgba(210,175,200,0.18);font-size:11px;color:#8a6878;display:flex;align-items:center;gap:5px;}
 .jail-name:last-child{border-bottom:none;}
 .jail-name::before{content:'🔒';font-size:10px;}
-.disclaimer{text-align:center;font-size:10px;color:#c0a0b4;font-style:italic;margin-bottom:1rem;line-height:1.5;}
+.saved-note{font-size:10px;color:#c0a8b8;font-style:italic;margin-top:10px;text-align:center;line-height:1.4;}
+.disclaimer{text-align:center;font-size:10px;color:#c0a0b4;font-style:italic;margin-top:1rem;line-height:1.5;}
 .footer{text-align:center;font-size:10px;color:#d4b8c8;font-style:italic;letter-spacing:0.06em;margin-top:1.5rem;padding-bottom:1rem;}
 .empty-state{font-size:11px;color:#c0a8b8;font-style:italic;}
 </style>
@@ -80,7 +81,6 @@ body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;paddin
     <h1>2026 Summer Dating Bingo</h1>
     <p>Score -1 for every ick. Score +4 for every green flag. Breakeven and you survived.</p>
   </div>
-  <div class="disclaimer">this game was made for people dating men. if you are a man and you join, you may be subject to boy jail.</div>
   <div id="joinScreen">
     <h2>enter your name to play</h2>
     <div class="join-row">
@@ -88,6 +88,7 @@ body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;paddin
       <button onclick="joinBoard()">join</button>
     </div>
     <div id="joinError"></div>
+    <div class="saved-note">your selections are saved. return anytime with the same name.</div>
   </div>
   <div id="boardSection">
     <div class="board">
@@ -129,6 +130,7 @@ body{background:#fdfaf8;font-family:'DM Sans',sans-serif;min-height:100vh;paddin
       </div>
     </div>
   </div>
+  <div class="disclaimer">this game was made for people dating men. if you are a man and you join, you may be subject to boy jail.</div>
   <div class="footer">vibe coded by carrie</div>
 </div>
 <script>
